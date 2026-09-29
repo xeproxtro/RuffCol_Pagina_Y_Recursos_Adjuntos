@@ -1,0 +1,55 @@
+# Java
+*.class
+*.jar
+*.war
+*.ear
+target/
+*.iml
+
+# IDE
+.idea/
+.vscode/
+.settings/
+.project
+.classpath
+
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+
+# Gradle
+.gradle/
+build/
+gradle-app.setting
+
+# Eclipse
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.loadpath
+
+# NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Spring Boot
+uploads/
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Debug
+*.hprof

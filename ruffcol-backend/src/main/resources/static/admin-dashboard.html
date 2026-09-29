@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administrador - Ruffcol</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">🐾 Ruffcol Admin</a>
+                <ul class="nav-links">
+                    <li><a href="index.html">Tienda</a></li>
+                    <li><a href="#" onclick="logout()">Cerrar Sesión</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" style="margin-top: 30px;">
+        <div class="card">
+            <div class="card-header">
+                <h1>Panel de Administrador</h1>
+            </div>
+            
+            <div id="error-container" class="alert alert-danger" style="display: none;"></div>
+            <div id="success-container" class="alert alert-success" style="display: none;"></div>
+            
+            <!-- Tabs de navegación -->
+            <div style="margin-bottom: 20px;">
+                <button class="btn btn-primary" onclick="mostrarSeccion('productos')">Productos</button>
+                <button class="btn btn-secondary" onclick="mostrarSeccion('categorias')">Categorías</button>
+                <button class="btn btn-secondary" onclick="mostrarSeccion('pedidos')">Pedidos</button>
+            </div>
+            
+            <!-- Sección de Productos -->
+            <div id="seccion-productos">
+                <h2>Gestión de Productos</h2>
+                <button class="btn btn-success" onclick="mostrarFormularioProducto()" style="margin: 15px 0;">Nuevo Producto</button>
+                
+                <div id="tabla-productos"></div>
+                
+                <div id="formulario-producto" class="card" style="display: none; margin-top: 20px;">
+                    <h3 id="titulo-formulario-producto">Nuevo Producto</h3>
+                    <form id="form-producto" enctype="multipart/form-data">
+                        <input type="hidden" id="producto-id">
+                        <div class="form-group">
+                            <label>Nombre:</label>
+                            <input type="text" id="producto-nombre" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Descripción:</label>
+                            <textarea id="producto-descripcion" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Precio:</label>
+                            <input type="number" id="producto-precio" class="form-control" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Stock:</label>
+                            <input type="number" id="producto-stock" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Imagen del producto:</label>
+                            <input type="file" id="producto-imagen-file" class="form-control" accept="image/*">
+                            <small style="color: var(--color-text-secondary);">Sube una imagen del producto (opcional)</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Categoría:</label>
+                            <select id="producto-categoria" class="form-control" required></select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                        <button type="button" class="btn btn-secondary" onclick="ocultarFormularioProducto()">Cancelar</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Sección de Categorías -->
+            <div id="seccion-categorias" style="display: none;">
+                <h2>Gestión de Categorías</h2>
+                <button class="btn btn-success" onclick="mostrarFormularioCategoria()" style="margin: 15px 0;">Nueva Categoría</button>
+                
+                <div id="tabla-categorias"></div>
+                
+                <div id="formulario-categoria" class="card" style="display: none; margin-top: 20px;">
+                    <h3 id="titulo-formulario-categoria">Nueva Categoría</h3>
+                    <form id="form-categoria">
+                        <input type="hidden" id="categoria-id">
+                        <div class="form-group">
+                            <label>Nombre:</label>
+                            <input type="text" id="categoria-nombre" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Descripción:</label>
+                            <textarea id="categoria-descripcion" class="form-control" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                        <button type="button" class="btn btn-secondary" onclick="ocultarFormularioCategoria()">Cancelar</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Sección de Pedidos -->
+            <div id="seccion-pedidos" style="display: none;">
+                <h2>Gestión de Pedidos</h2>
+                <div id="tabla-pedidos"></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Verificar autenticación y rol para el panel de admin
+            if (!isAuthenticated()) {
+                alert('Debes iniciar sesión para acceder al panel de administrador');
+                localStorage.setItem('redirectAfterLogin', 'admin-dashboard.html');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            if (getUserRole() !== 'ADMIN' && getUserRole() !== 'SUPER_ADMIN') {
+                alert('No tienes permisos para acceder al panel de administrador');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            cargarProductos();
+            cargarCategorias();
+            cargarPedidos();
+        });
+
+        function mostrarSeccion(seccion) {
+            document.getElementById('seccion-productos').style.display = seccion === 'productos' ? 'block' : 'none';
+            document.getElementById('seccion-categorias').style.display = seccion === 'categorias' ? 'block' : 'none';
+            document.getElementById('seccion-pedidos').style.display = seccion === 'pedidos' ? 'block' : 'none';
+        }
+
+        // Funciones de Productos
+        async function cargarProductos() {
+            try {
+                const productos = await getProductos();
+                mostrarTablaProductos(productos);
+            } catch (error) {
+                mostrarError('Error al cargar productos: ' + error.message);
+            }
+        }
+
+        function mostrarTablaProductos(productos) {
+            const container = document.getElementById('tabla-productos');
+            container.innerHTML = '';
+            
+            if (productos.length === 0) {
+                container.innerHTML = '<p>No hay productos</p>';
+                return;
+            }
+            
+            let html = '<table><thead><tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Categoría</th><th>Acciones</th></tr></thead><tbody>';
+            
+            productos.forEach(p => {
+                html += `<tr>
+                    <td>${p.id}</td>
+                    <td>${p.nombre}</td>
+                    <td>$${p.precio.toFixed(2)}</td>
+                    <td>${p.stock}</td>
+                    <td>${p.categoriaNombre}</td>
+                    <td>
+                        <button class="btn btn-warning" onclick="editarProducto(${p.id})">Editar</button>
+                        <button class="btn btn-danger" onclick="eliminarProducto(${p.id})">Eliminar</button>
+                    </td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function mostrarFormularioProducto() {
+            document.getElementById('formulario-producto').style.display = 'block';
+            document.getElementById('titulo-formulario-producto').textContent = 'Nuevo Producto';
+            document.getElementById('form-producto').reset();
+            document.getElementById('producto-id').value = '';
+            cargarCategoriasEnSelect();
+        }
+
+        function ocultarFormularioProducto() {
+            document.getElementById('formulario-producto').style.display = 'none';
+        }
+
+        async function cargarCategoriasEnSelect() {
+            try {
+                const categorias = await getCategorias();
+                const select = document.getElementById('producto-categoria');
+                select.innerHTML = '';
+                
+                categorias.forEach(c => {
+                    const option = document.createElement('option');
+                    option.value = c.id;
+                    option.textContent = c.nombre;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                mostrarError('Error al cargar categorías: ' + error.message);
+            }
+        }
+
+        async function editarProducto(id) {
+            try {
+                const producto = await getProducto(id);
+                document.getElementById('formulario-producto').style.display = 'block';
+                document.getElementById('titulo-formulario-producto').textContent = 'Editar Producto';
+                
+                document.getElementById('producto-id').value = producto.id;
+                document.getElementById('producto-nombre').value = producto.nombre;
+                document.getElementById('producto-descripcion').value = producto.descripcion || '';
+                document.getElementById('producto-precio').value = producto.precio;
+                document.getElementById('producto-stock').value = producto.stock;
+                document.getElementById('producto-imagen-file').value = ''; // Limpiar input de archivo
+                
+                if (producto.imagenUrl) {
+                    const imagenInfo = document.createElement('div');
+                    imagenInfo.style.marginTop = '10px';
+                    imagenInfo.style.padding = '10px';
+                    imagenInfo.style.backgroundColor = 'var(--color-background)';
+                    imagenInfo.style.borderRadius = '8px';
+                    imagenInfo.innerHTML = `
+                        <small style="color: var(--color-text-secondary);">Imagen actual:</small><br>
+                        <img src="${producto.imagenUrl}" alt="Imagen actual" style="max-width: 100px; max-height: 100px; margin-top: 5px; border-radius: 4px;">
+                    `;
+                    
+                    // Reemplazar el label del input de archivo
+                    const imagenLabel = document.getElementById('producto-imagen-file').parentElement;
+                    if (!imagenLabel.querySelector('.imagen-actual')) {
+                        imagenInfo.className = 'imagen-actual';
+                        imagenLabel.appendChild(imagenInfo);
+                    }
+                }
+                
+                await cargarCategoriasEnSelect();
+                document.getElementById('producto-categoria').value = producto.categoriaId;
+            } catch (error) {
+                mostrarError('Error al cargar producto: ' + error.message);
+            }
+        }
+
+        async function eliminarProducto(id) {
+            if (confirm('¿Estás seguro de eliminar este producto?')) {
+                try {
+                    await deleteProducto(id);
+                    mostrarExito('Producto eliminado exitosamente');
+                    cargarProductos();
+                } catch (error) {
+                    mostrarError('Error al eliminar producto: ' + error.message);
+                }
+            }
+        }
+
+        document.getElementById('form-producto').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('producto-id').value;
+            const imagenFile = document.getElementById('producto-imagen-file').files[0];
+            
+            // Crear FormData para subida de archivos
+            const formData = new FormData();
+            formData.append('nombre', document.getElementById('producto-nombre').value);
+            formData.append('descripcion', document.getElementById('producto-descripcion').value);
+            formData.append('precio', document.getElementById('producto-precio').value);
+            formData.append('stock', document.getElementById('producto-stock').value);
+            formData.append('categoriaId', document.getElementById('producto-categoria').value);
+            
+            if (imagenFile) {
+                formData.append('imagen', imagenFile);
+            }
+            
+            try {
+                const token = localStorage.getItem('jwtToken');
+                let url = `${API_BASE_URL}/productos`;
+                let method = 'POST';
+                
+                if (id) {
+                    url = `${API_BASE_URL}/productos/${id}`;
+                    method = 'PUT';
+                }
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Error en la petición');
+                }
+                
+                const resultado = await response.json();
+                
+                if (id) {
+                    mostrarExito('Producto actualizado exitosamente');
+                } else {
+                    mostrarExito('Producto creado exitosamente');
+                }
+                
+                ocultarFormularioProducto();
+                cargarProductos();
+            } catch (error) {
+                mostrarError('Error al guardar producto: ' + error.message);
+            }
+        });
+
+        // Funciones de Categorías
+        async function cargarCategorias() {
+            try {
+                const categorias = await getCategorias();
+                mostrarTablaCategorias(categorias);
+            } catch (error) {
+                mostrarError('Error al cargar categorías: ' + error.message);
+            }
+        }
+
+        function mostrarTablaCategorias(categorias) {
+            const container = document.getElementById('tabla-categorias');
+            container.innerHTML = '';
+            
+            if (categorias.length === 0) {
+                container.innerHTML = '<p>No hay categorías</p>';
+                return;
+            }
+            
+            let html = '<table><thead><tr><th>ID</th><th>Nombre</th><th>Descripción</th><th>Acciones</th></tr></thead><tbody>';
+            
+            categorias.forEach(c => {
+                html += `<tr>
+                    <td>${c.id}</td>
+                    <td>${c.nombre}</td>
+                    <td>${c.descripcion || ''}</td>
+                    <td>
+                        <button class="btn btn-warning" onclick="editarCategoria(${c.id})">Editar</button>
+                        <button class="btn btn-danger" onclick="eliminarCategoria(${c.id})">Eliminar</button>
+                    </td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function mostrarFormularioCategoria() {
+            document.getElementById('formulario-categoria').style.display = 'block';
+            document.getElementById('titulo-formulario-categoria').textContent = 'Nueva Categoría';
+            document.getElementById('form-categoria').reset();
+            document.getElementById('categoria-id').value = '';
+        }
+
+        function ocultarFormularioCategoria() {
+            document.getElementById('formulario-categoria').style.display = 'none';
+        }
+
+        async function editarCategoria(id) {
+            try {
+                const categoria = await getCategoria(id);
+                document.getElementById('formulario-categoria').style.display = 'block';
+                document.getElementById('titulo-formulario-categoria').textContent = 'Editar Categoría';
+                
+                document.getElementById('categoria-id').value = categoria.id;
+                document.getElementById('categoria-nombre').value = categoria.nombre;
+                document.getElementById('categoria-descripcion').value = categoria.descripcion || '';
+            } catch (error) {
+                mostrarError('Error al cargar categoría: ' + error.message);
+            }
+        }
+
+        async function eliminarCategoria(id) {
+            if (confirm('¿Estás seguro de eliminar esta categoría?')) {
+                try {
+                    await deleteCategoria(id);
+                    mostrarExito('Categoría eliminada exitosamente');
+                    cargarCategorias();
+                } catch (error) {
+                    mostrarError('Error al eliminar categoría: ' + error.message);
+                }
+            }
+        }
+
+        document.getElementById('form-categoria').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('categoria-id').value;
+            const categoriaData = {
+                nombre: document.getElementById('categoria-nombre').value,
+                descripcion: document.getElementById('categoria-descripcion').value
+            };
+            
+            try {
+                if (id) {
+                    await updateCategoria(id, categoriaData);
+                    mostrarExito('Categoría actualizada exitosamente');
+                } else {
+                    await createCategoria(categoriaData);
+                    mostrarExito('Categoría creada exitosamente');
+                }
+                
+                ocultarFormularioCategoria();
+                cargarCategorias();
+            } catch (error) {
+                mostrarError('Error al guardar categoría: ' + error.message);
+            }
+        });
+
+        // Funciones de Pedidos
+        async function cargarPedidos() {
+            try {
+                const pedidos = await getPedidos();
+                mostrarTablaPedidos(pedidos);
+            } catch (error) {
+                mostrarError('Error al cargar pedidos: ' + error.message);
+            }
+        }
+
+        function mostrarTablaPedidos(pedidos) {
+            const container = document.getElementById('tabla-pedidos');
+            container.innerHTML = '';
+            
+            if (pedidos.length === 0) {
+                container.innerHTML = '<p>No hay pedidos</p>';
+                return;
+            }
+            
+            let html = '<table><thead><tr><th>ID</th><th>Fecha</th><th>Cliente</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>';
+            
+            pedidos.forEach(p => {
+                html += `<tr>
+                    <td>${p.id}</td>
+                    <td>${new Date(p.fechaPedido).toLocaleString()}</td>
+                    <td>${p.usuarioNombre}</td>
+                    <td>$${p.total.toFixed(2)}</td>
+                    <td>${p.estado}</td>
+                    <td>
+                        <select onchange="cambiarEstadoPedido(${p.id}, this.value)" class="filter-select">
+                            <option value="PENDIENTE" ${p.estado === 'PENDIENTE' ? 'selected' : ''}>Pendiente</option>
+                            <option value="EN_CONFECCION" ${p.estado === 'EN_CONFECCION' ? 'selected' : ''}>En Confección</option>
+                            <option value="ENVIADO" ${p.estado === 'ENVIADO' ? 'selected' : ''}>Enviado</option>
+                            <option value="ENTREGADO" ${p.estado === 'ENTREGADO' ? 'selected' : ''}>Entregado</option>
+                        </select>
+                    </td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        async function cambiarEstadoPedido(id, estado) {
+            try {
+                await updatePedidoEstado(id, estado);
+                mostrarExito('Estado del pedido actualizado');
+                cargarPedidos();
+            } catch (error) {
+                mostrarError('Error al actualizar estado: ' + error.message);
+            }
+        }
+
+        function mostrarError(mensaje) {
+            const container = document.getElementById('error-container');
+            container.textContent = mensaje;
+            container.style.display = 'block';
+            setTimeout(() => container.style.display = 'none', 5000);
+        }
+
+        function mostrarExito(mensaje) {
+            const container = document.getElementById('success-container');
+            container.textContent = mensaje;
+            container.style.display = 'block';
+            setTimeout(() => container.style.display = 'none', 3000);
+        }
+    </script>
+</body>
+</html>

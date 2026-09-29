@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Super Admin - Ruffcol</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">🐾 Ruffcol Super Admin</a>
+                <ul class="nav-links">
+                    <li><a href="index.html">Tienda</a></li>
+                    <li><a href="admin-dashboard.html">Panel Admin</a></li>
+                    <li><a href="#" onclick="logout()">Cerrar Sesión</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" style="margin-top: 30px;">
+        <div class="card">
+            <div class="card-header">
+                <h1>Panel Super Administrador</h1>
+            </div>
+            
+            <div id="error-container" class="alert alert-danger" style="display: none;"></div>
+            <div id="success-container" class="alert alert-success" style="display: none;"></div>
+            
+            <!-- Tabs de navegación -->
+            <div style="margin-bottom: 20px;">
+                <button class="btn btn-primary" onclick="mostrarSeccion('crear-admin')">Crear Administrador</button>
+                <button class="btn btn-secondary" onclick="mostrarSeccion('admin-list')">Administradores Activos</button>
+            </div>
+            
+            <!-- Sección Crear Administrador -->
+            <div id="seccion-crear-admin">
+                <h2>Crear Nuevo Administrador</h2>
+                <p style="margin-bottom: 20px; color: var(--color-text-secondary);">Crea una cuenta de administrador de forma directa y activa.</p>
+                
+                <form id="crear-admin-form">
+                    <div class="form-group">
+                        <label for="admin-nombre">Nombre completo:</label>
+                        <input type="text" id="admin-nombre" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="admin-email">Email:</label>
+                        <input type="email" id="admin-email" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="admin-password">Contraseña (mínimo 6 caracteres):</label>
+                        <input type="password" id="admin-password" class="form-control" required minlength="6">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="admin-confirm-password">Confirmar contraseña:</label>
+                        <input type="password" id="admin-confirm-password" class="form-control" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Crear Administrador</button>
+                </form>
+            </div>
+            
+            <!-- Sección Lista de Administradores -->
+            <div id="seccion-admin-list" style="display: none;">
+                <h2>Administradores Activos</h2>
+                <div id="admin-container"></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Verificar autenticación y rol para el panel de super admin
+            if (!isAuthenticated()) {
+                alert('Debes iniciar sesión para acceder al panel de super administrador');
+                localStorage.setItem('redirectAfterLogin', 'superadmin-dashboard.html');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            if (getUserRole() !== 'SUPER_ADMIN') {
+                alert('Acceso no autorizado. Solo Super Administradores pueden acceder a este panel.');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            cargarAdministradores();
+        });
+
+        function mostrarSeccion(seccion) {
+            document.getElementById('seccion-crear-admin').style.display = seccion === 'crear-admin' ? 'block' : 'none';
+            document.getElementById('seccion-admin-list').style.display = seccion === 'admin-list' ? 'block' : 'none';
+        }
+
+        // Formulario para crear administrador
+        document.getElementById('crear-admin-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const nombre = document.getElementById('admin-nombre').value;
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+            const confirmPassword = document.getElementById('admin-confirm-password').value;
+            const errorContainer = document.getElementById('error-container');
+            const successContainer = document.getElementById('success-container');
+            
+            errorContainer.style.display = 'none';
+            successContainer.style.display = 'none';
+            
+            if (password !== confirmPassword) {
+                errorContainer.textContent = 'Las contraseñas no coinciden';
+                errorContainer.style.display = 'block';
+                return;
+            }
+            
+            try {
+                const adminData = {
+                    nombre: nombre,
+                    email: email,
+                    password: password
+                };
+                
+                await crearAdministrador(adminData);
+                successContainer.textContent = '¡Administrador creado exitosamente!';
+                successContainer.style.display = 'block';
+                
+                // Limpiar formulario
+                document.getElementById('crear-admin-form').reset();
+                
+                // Recargar lista de administradores
+                cargarAdministradores();
+            } catch (error) {
+                errorContainer.textContent = 'Error al crear administrador: ' + error.message;
+                errorContainer.style.display = 'block';
+            }
+        });
+
+        async function crearAdministrador(adminData) {
+            const url = `${API_BASE_URL}/superadmin/crear-admin`;
+            const token = localStorage.getItem('jwtToken');
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify(adminData),
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Error en la petición');
+            }
+            
+            return await response.json();
+        }
+
+        async function cargarAdministradores() {
+            try {
+                const administradores = await obtenerAdministradores();
+                const container = document.getElementById('admin-container');
+                
+                if (administradores.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: var(--color-text-secondary);">No hay administradores activos</p>';
+                    return;
+                }
+                
+                let html = '<table><thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Fecha Registro</th></tr></thead><tbody>';
+                
+                administradores.forEach(a => {
+                    html += `<tr>
+                        <td>${a.id}</td>
+                        <td>${a.nombre}</td>
+                        <td>${a.email}</td>
+                        <td>${new Date(a.fechaRegistro).toLocaleString()}</td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                mostrarError('Error al cargar administradores: ' + error.message);
+            }
+        }
+
+        async function obtenerAdministradores() {
+            const url = `${API_BASE_URL}/superadmin/administradores`;
+            const token = localStorage.getItem('jwtToken');
+            
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Error en la petición');
+            }
+            
+            return await response.json();
+        }
+
+        function mostrarError(mensaje) {
+            const container = document.getElementById('error-container');
+            container.textContent = mensaje;
+            container.style.display = 'block';
+            setTimeout(() => container.style.display = 'none', 5000);
+        }
+
+        function mostrarExito(mensaje) {
+            const container = document.getElementById('success-container');
+            container.textContent = mensaje;
+            container.style.display = 'block';
+            setTimeout(() => container.style.display = 'none', 3000);
+        }
+    </script>
+</body>
+</html>

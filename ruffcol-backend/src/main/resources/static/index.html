@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruffcol - Tienda de Ropa y Accesorios para Mascotas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="index.html" class="logo">🐾 Ruffcol</a>
+                <ul class="nav-links">
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="#" onclick="irAlCarrito()">
+                        Carrito 
+                        <span id="carrito-contador" style="display: none; background: #dc3545; padding: 2px 8px; border-radius: 50%; font-size: 0.8rem;">0</span>
+                    </a></li>
+                    <li id="auth-links">
+                        <a href="login.html">Iniciar Sesión</a>
+                        <a href="registro.html">Registrarse</a>
+                    </li>
+                    <li id="user-links" style="display: none;">
+                        <span id="user-name"></span>
+                        <a href="#" onclick="logout()">Cerrar Sesión</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" style="margin-top: 30px;">
+        <div class="card">
+            <div class="card-header">
+                <h1>Catálogo de Productos</h1>
+            </div>
+            
+            <div class="filters">
+                <select id="filtro-categoria" class="filter-select">
+                    <option value="">Todas las categorías</option>
+                </select>
+                <input type="text" id="busqueda" class="form-control" placeholder="Buscar productos..." style="max-width: 300px;">
+            </div>
+            
+            <div id="loading" class="loading">Cargando productos</div>
+            <div id="productos-container" class="products-grid"></div>
+            <div id="error-container" class="alert alert-danger" style="display: none;"></div>
+        </div>
+    </main>
+
+    <footer style="background: #333; color: white; padding: 20px; margin-top: 50px; text-align: center;">
+        <div class="container">
+            <p>&copy; 2024 Ruffcol - Tienda de Ropa y Accesorios para Mascotas</p>
+        </div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script>
+        // Verificar autenticación al cargar
+        document.addEventListener('DOMContentLoaded', () => {
+            if (isAuthenticated()) {
+                document.getElementById('auth-links').style.display = 'none';
+                document.getElementById('user-links').style.display = 'flex';
+                document.getElementById('user-name').textContent = `Hola, ${localStorage.getItem('userName')}`;
+                
+                const role = getUserRole();
+                if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
+                    const adminLink = document.createElement('li');
+                    adminLink.innerHTML = '<a href="#" onclick="requireRole(\'ADMIN\') ? window.location.href=\'admin-dashboard.html\' : null">Panel Admin</a>';
+                    document.getElementById('user-links').insertBefore(adminLink, document.getElementById('user-links').lastChild);
+                }
+                
+                if (role === 'SUPER_ADMIN') {
+                    const superAdminLink = document.createElement('li');
+                    superAdminLink.innerHTML = '<a href="#" onclick="requireRole(\'SUPER_ADMIN\') ? window.location.href=\'superadmin-dashboard.html\' : null">Panel Super Admin</a>';
+                    document.getElementById('user-links').insertBefore(superAdminLink, document.getElementById('user-links').lastChild);
+                }
+            }
+            
+            cargarCategorias();
+            cargarProductos();
+        });
+
+        let todosLosProductos = [];
+
+        async function cargarCategorias() {
+            try {
+                const categorias = await getCategorias();
+                const select = document.getElementById('filtro-categoria');
+                
+                categorias.forEach(categoria => {
+                    const option = document.createElement('option');
+                    option.value = categoria.id;
+                    option.textContent = categoria.nombre;
+                    select.appendChild(option);
+                });
+                
+                select.addEventListener('change', filtrarProductos);
+            } catch (error) {
+                console.error('Error al cargar categorías:', error);
+            }
+        }
+
+        async function cargarProductos() {
+            const loading = document.getElementById('loading');
+            const container = document.getElementById('productos-container');
+            const errorContainer = document.getElementById('error-container');
+            
+            try {
+                loading.style.display = 'block';
+                container.innerHTML = '';
+                errorContainer.style.display = 'none';
+                
+                todosLosProductos = await getProductos();
+                mostrarProductos(todosLosProductos);
+                
+                loading.style.display = 'none';
+            } catch (error) {
+                loading.style.display = 'none';
+                errorContainer.textContent = 'Error al cargar productos: ' + error.message;
+                errorContainer.style.display = 'block';
+            }
+        }
+
+        function mostrarProductos(productos) {
+            const container = document.getElementById('productos-container');
+            container.innerHTML = '';
+            
+            if (productos.length === 0) {
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">No se encontraron productos</p>';
+                return;
+            }
+            
+            productos.forEach(producto => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                
+                const imagenUrl = producto.imagenUrl || 'https://via.placeholder.com/280x200?text=Producto';
+                
+                card.innerHTML = `
+                    <img src="${imagenUrl}" alt="${producto.nombre}" class="product-image" onerror="this.src='https://via.placeholder.com/280x200?text=Producto'">
+                    <div class="product-info">
+                        <h3 class="product-name">${producto.nombre}</h3>
+                        <p class="product-description">${producto.descripcion || ''}</p>
+                        <p class="product-price">$${producto.precio.toFixed(2)}</p>
+                        <p class="product-stock">Stock: ${producto.stock}</p>
+                        <button class="btn btn-primary" onclick="agregarAlCarritoDesdeCatalogo(${producto.id})" ${producto.stock <= 0 ? 'disabled' : ''}>
+                            ${producto.stock > 0 ? 'Agregar al Carrito' : 'Agotado'}
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        async function agregarAlCarritoDesdeCatalogo(productoId) {
+            try {
+                const producto = await getProducto(productoId);
+                
+                if (producto.stock <= 0) {
+                    alert('Este producto está agotado');
+                    return;
+                }
+                
+                agregarAlCarrito(producto, 1);
+                alert('Producto agregado al carrito');
+            } catch (error) {
+                alert('Error al agregar producto: ' + error.message);
+            }
+        }
+
+        function filtrarProductos() {
+            const categoriaId = document.getElementById('filtro-categoria').value;
+            const busqueda = document.getElementById('busqueda').value.toLowerCase();
+            
+            let productosFiltrados = todosLosProductos;
+            
+            if (categoriaId) {
+                productosFiltrados = productosFiltrados.filter(p => p.categoriaId == categoriaId);
+            }
+            
+            if (busqueda) {
+                productosFiltrados = productosFiltrados.filter(p => 
+                    p.nombre.toLowerCase().includes(busqueda) || 
+                    (p.descripcion && p.descripcion.toLowerCase().includes(busqueda))
+                );
+            }
+            
+            mostrarProductos(productosFiltrados);
+        }
+
+        document.getElementById('busqueda').addEventListener('input', filtrarProductos);
+        
+        // Función para ir al carrito con verificación de autenticación
+        function irAlCarrito() {
+            const carrito = getCarrito();
+            if (carrito.length === 0) {
+                alert('El carrito está vacío');
+                return;
+            }
+            
+            if (!isAuthenticated()) {
+                alert('Debes iniciar sesión para ver tu carrito');
+                localStorage.setItem('redirectAfterLogin', 'carrito.html');
+                window.location.href = 'login.html';
+            } else {
+                window.location.href = 'carrito.html';
+            }
+        }
+    </script>
+</body>
+</html>
