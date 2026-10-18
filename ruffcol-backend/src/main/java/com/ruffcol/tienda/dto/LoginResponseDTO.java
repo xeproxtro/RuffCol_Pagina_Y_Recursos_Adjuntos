@@ -1,22 +1,23 @@
 package com.ruffcol.tienda.dto;
 
 public class LoginResponseDTO {
-    
+
     private String token;
     private String tipo = "Bearer";
     private Integer userId;
     private String nombre;
+    private String username;
     private String email;
     private String rol;
-    
+
     public LoginResponseDTO() {
     }
-    
-    public LoginResponseDTO(String token, Integer userId, String nombre, String email, String rol) {
+
+    public LoginResponseDTO(String token, Integer userId, String nombre, String username, String rol) {
         this.token = token;
         this.userId = userId;
         this.nombre = nombre;
-        this.email = email;
+        this.username = username;
         this.rol = rol;
     }
     
@@ -51,7 +52,15 @@ public class LoginResponseDTO {
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
-    
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public String getEmail() {
         return email;
     }

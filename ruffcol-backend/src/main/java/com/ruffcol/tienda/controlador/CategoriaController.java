@@ -10,7 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/categorias")
@@ -52,8 +54,10 @@ public class CategoriaController {
     
     @DeleteMapping("/{id}")
     @Operation(summary = "Eliminar categoría", description = "Elimina una categoría (Requiere rol ADMIN o SUPER_ADMIN)")
-    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
+    public ResponseEntity<Map<String, String>> eliminar(@PathVariable Integer id) {
         categoriaService.eliminar(id);
-        return ResponseEntity.noContent().build();
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Categoría eliminada exitosamente");
+        return ResponseEntity.ok(response);
     }
 }

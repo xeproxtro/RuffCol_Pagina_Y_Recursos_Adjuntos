@@ -13,11 +13,14 @@
     <header>
         <div class="container">
             <nav>
-                <a href="index.html" class="logo">🐾 Ruffcol</a>
+                <a href="index.html" class="logo">
+                    <img src="images/logo.jpg" alt="Ruffcol Logo" style="height: 40px; width: auto; margin-right: 10px;">
+                    Ruffcol
+                </a>
                 <ul class="nav-links">
                     <li><a href="index.html">Inicio</a></li>
-                    <li><a href="#" onclick="irAlCarrito()">
-                        Carrito 
+                    <li id="carrito-link"><a href="#" onclick="irAlCarrito()">
+                        Carrito
                         <span id="carrito-contador" style="display: none; background: #dc3545; padding: 2px 8px; border-radius: 50%; font-size: 0.8rem;">0</span>
                     </a></li>
                     <li id="auth-links">
@@ -65,22 +68,28 @@
             if (isAuthenticated()) {
                 document.getElementById('auth-links').style.display = 'none';
                 document.getElementById('user-links').style.display = 'flex';
-                document.getElementById('user-name').textContent = `Hola, ${localStorage.getItem('userName')}`;
-                
+                document.getElementById('user-name').textContent = `Hola, ${localStorage.getItem('userUsername')}`;
+
                 const role = getUserRole();
+
+                // Ocultar carrito para admin y super_admin
+                if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
+                    document.getElementById('carrito-link').style.display = 'none';
+                }
+
                 if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
                     const adminLink = document.createElement('li');
                     adminLink.innerHTML = '<a href="#" onclick="requireRole(\'ADMIN\') ? window.location.href=\'admin-dashboard.html\' : null">Panel Admin</a>';
                     document.getElementById('user-links').insertBefore(adminLink, document.getElementById('user-links').lastChild);
                 }
-                
+
                 if (role === 'SUPER_ADMIN') {
                     const superAdminLink = document.createElement('li');
                     superAdminLink.innerHTML = '<a href="#" onclick="requireRole(\'SUPER_ADMIN\') ? window.location.href=\'superadmin-dashboard.html\' : null">Panel Super Admin</a>';
                     document.getElementById('user-links').insertBefore(superAdminLink, document.getElementById('user-links').lastChild);
                 }
             }
-            
+
             cargarCategorias();
             cargarProductos();
         });
@@ -129,20 +138,26 @@
         function mostrarProductos(productos) {
             const container = document.getElementById('productos-container');
             container.innerHTML = '';
-            
+
             if (productos.length === 0) {
-                container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">No se encontraron productos</p>';
+                // Mostrar skeletons cuando no hay productos
+                mostrarSkeletons(4);
                 return;
             }
-            
+
+            // Mostrar productos reales
             productos.forEach(producto => {
                 const card = document.createElement('div');
                 card.className = 'product-card';
-                
-                const imagenUrl = producto.imagenUrl || 'https://via.placeholder.com/280x200?text=Producto';
-                
+
+                // Usar base64 si existe, sino placeholder
+                let imagenSrc = 'https://via.placeholder.com/280x200?text=Producto';
+                if (producto.imagen && producto.imagen.length > 0) {
+                    imagenSrc = `data:image/jpeg;base64,${producto.imagen}`;
+                }
+
                 card.innerHTML = `
-                    <img src="${imagenUrl}" alt="${producto.nombre}" class="product-image" onerror="this.src='https://via.placeholder.com/280x200?text=Producto'">
+                    <img src="${imagenSrc}" alt="${producto.nombre}" class="product-image" onerror="this.src='https://via.placeholder.com/280x200?text=Producto'">
                     <div class="product-info">
                         <h3 class="product-name">${producto.nombre}</h3>
                         <p class="product-description">${producto.descripcion || ''}</p>
@@ -153,9 +168,38 @@
                         </button>
                     </div>
                 `;
-                
+
                 container.appendChild(card);
             });
+
+            // Rellenar espacios vacíos con skeletons para completar la fila
+            const totalCards = container.children.length;
+            const cardsPerRow = window.innerWidth >= 768 ? 4 : (window.innerWidth >= 480 ? 2 : 1);
+            const remainingSpaces = (cardsPerRow - (totalCards % cardsPerRow)) % cardsPerRow;
+
+            if (remainingSpaces > 0) {
+                mostrarSkeletons(remainingSpaces);
+            }
+        }
+
+        function mostrarSkeletons(cantidad) {
+            const container = document.getElementById('productos-container');
+
+            for (let i = 0; i < cantidad; i++) {
+                const skeletonCard = document.createElement('div');
+                skeletonCard.className = 'skeleton-card';
+                skeletonCard.innerHTML = `
+                    <div class="skeleton-image"></div>
+                    <div class="skeleton-content">
+                        <div class="skeleton-title"></div>
+                        <div class="skeleton-text"></div>
+                        <div class="skeleton-text-short"></div>
+                        <div class="skeleton-price"></div>
+                        <div class="skeleton-button"></div>
+                    </div>
+                `;
+                container.appendChild(skeletonCard);
+            }
         }
 
         async function agregarAlCarritoDesdeCatalogo(productoId) {

@@ -6,20 +6,22 @@ import com.ruffcol.tienda.modelo.Rol;
 import java.time.LocalDateTime;
 
 public class UsuarioDTO {
-    
+
     private Integer id;
     private String nombre;
+    private String username;
     private String email;
     private Rol rol;
     private EstadoCuenta estadoCuenta;
     private LocalDateTime fechaRegistro;
-    
+
     public UsuarioDTO() {
     }
-    
-    public UsuarioDTO(Integer id, String nombre, String email, Rol rol, EstadoCuenta estadoCuenta, LocalDateTime fechaRegistro) {
+
+    public UsuarioDTO(Integer id, String nombre, String username, String email, Rol rol, EstadoCuenta estadoCuenta, LocalDateTime fechaRegistro) {
         this.id = id;
         this.nombre = nombre;
+        this.username = username;
         this.email = email;
         this.rol = rol;
         this.estadoCuenta = estadoCuenta;
@@ -41,7 +43,15 @@ public class UsuarioDTO {
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
-    
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public String getEmail() {
         return email;
     }

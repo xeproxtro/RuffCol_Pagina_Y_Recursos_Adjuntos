@@ -80,46 +80,58 @@ async function fetchAutorizado(endpoint, options = {}) {
 }
 
 // Funciones de autenticación
-async function registerCliente(nombre, email, password) {
+async function registerCliente(nombre, username, email, password) {
     const data = {
         nombre,
+        username,
         email,
         password,
     };
-    
+
     return await fetchAPI('/auth/register-cliente', {
         method: 'POST',
         body: JSON.stringify(data),
     });
 }
 
-async function login(email, password) {
+async function login(username, password) {
     const data = {
-        email,
+        username,
         password,
     };
-    
+
     const response = await fetchAPI('/auth/login', {
         method: 'POST',
         body: JSON.stringify(data),
     });
-    
+
     // Guardar información de autenticación con JWT
     localStorage.setItem('jwtToken', response.token);
     localStorage.setItem('userId', response.userId);
     localStorage.setItem('userRole', response.rol);
     localStorage.setItem('userName', response.nombre);
+    localStorage.setItem('userUsername', response.username);
     localStorage.setItem('userEmail', response.email);
-    
+
+    // Actualizar contador del carrito del usuario
+    actualizarContadorCarrito();
+
     return response;
 }
 
 function logout() {
+    // Limpiar carrito del usuario actual
+    const carritoKey = getCarritoKey();
+    localStorage.removeItem(carritoKey);
+
+    // Limpiar datos de autenticación
     localStorage.removeItem('jwtToken');
     localStorage.removeItem('userId');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userName');
+    localStorage.removeItem('userUsername');
     localStorage.removeItem('userEmail');
+
     window.location.href = 'index.html';
 }
 
@@ -202,11 +214,25 @@ async function createPedido(items) {
     const data = {
         items: items,
     };
-    
-    return await fetchAutorizado('/pedidos', {
+
+    const url = `${API_BASE_URL}/pedidos`;
+    const token = localStorage.getItem('jwtToken');
+
+    const response = await fetch(url, {
         method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify(data),
     });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error en la petición');
+    }
+
+    return await response.json();
 }
 
 async function getMisPedidos() {
@@ -286,21 +312,28 @@ function redirectAfterLogin() {
 }
 
 // Funciones de utilidad para el carrito
+function getCarritoKey() {
+    const userId = localStorage.getItem('userId');
+    return userId ? `carrito_${userId}` : 'carrito_guest';
+}
+
 function getCarrito() {
-    const carrito = localStorage.getItem('carrito');
+    const carritoKey = getCarritoKey();
+    const carrito = localStorage.getItem(carritoKey);
     return carrito ? JSON.parse(carrito) : [];
 }
 
 function saveCarrito(carrito) {
-    localStorage.setItem('carrito', JSON.stringify(carrito));
+    const carritoKey = getCarritoKey();
+    localStorage.setItem(carritoKey, JSON.stringify(carrito));
 }
 
 function agregarAlCarrito(producto, cantidad = 1) {
     const carrito = getCarrito();
-    
+
     // Verificar si el producto ya está en el carrito
     const itemExistente = carrito.find(item => item.productoId === producto.id);
-    
+
     if (itemExistente) {
         itemExistente.cantidad += cantidad;
     } else {
@@ -309,10 +342,10 @@ function agregarAlCarrito(producto, cantidad = 1) {
             nombre: producto.nombre,
             precio: producto.precio,
             cantidad: cantidad,
-            imagenUrl: producto.imagenUrl,
+            imagen: producto.imagen,
         });
     }
-    
+
     saveCarrito(carrito);
     actualizarContadorCarrito();
 }
@@ -339,7 +372,14 @@ function actualizarCantidadCarrito(productoId, nuevaCantidad) {
 }
 
 function vaciarCarrito() {
-    localStorage.removeItem('carrito');
+    const carritoKey = getCarritoKey();
+    localStorage.removeItem(carritoKey);
+    actualizarContadorCarrito();
+}
+
+function clearCarrito() {
+    const carritoKey = getCarritoKey();
+    localStorage.removeItem(carritoKey);
     actualizarContadorCarrito();
 }
 
@@ -361,5 +401,14 @@ function actualizarContadorCarrito() {
 
 // Inicializar contador del carrito al cargar la página
 document.addEventListener('DOMContentLoaded', () => {
-    actualizarContadorCarrito();
+    // Si hay usuario autenticado, cargar su carrito
+    if (isAuthenticated()) {
+        actualizarContadorCarrito();
+    } else {
+        // Si no hay usuario, limpiar el contador
+        const contadorElement = document.getElementById('carrito-contador');
+        if (contadorElement) {
+            contadorElement.style.display = 'none';
+        }
+    }
 });

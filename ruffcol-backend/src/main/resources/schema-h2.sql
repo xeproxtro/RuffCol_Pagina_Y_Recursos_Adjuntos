@@ -5,7 +5,8 @@
 CREATE TABLE IF NOT EXISTS usuario (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100),
     password VARCHAR(255) NOT NULL,
     rol VARCHAR(20) NOT NULL,
     estado_cuenta VARCHAR(20) NOT NULL,
@@ -26,7 +27,7 @@ CREATE TABLE IF NOT EXISTS producto (
     descripcion TEXT,
     precio DECIMAL(10,2) NOT NULL,
     stock INT NOT NULL,
-    imagen_url VARCHAR(255),
+    imagen BLOB,
     id_categoria INT NOT NULL,
     FOREIGN KEY (id_categoria) REFERENCES categoria(id)
 );

@@ -13,7 +13,10 @@
     <header>
         <div class="container">
             <nav>
-                <a href="index.html" class="logo">🐾 Ruffcol</a>
+                <a href="index.html" class="logo">
+                    <img src="images/logo.jpg" alt="Ruffcol Logo" style="height: 40px; width: auto; margin-right: 10px;">
+                    Ruffcol
+                </a>
                 <ul class="nav-links">
                     <li><a href="index.html">Inicio</a></li>
                     <li id="auth-links">
@@ -69,7 +72,7 @@
             if (isAuthenticated()) {
                 document.getElementById('auth-links').style.display = 'none';
                 document.getElementById('user-links').style.display = 'flex';
-                document.getElementById('user-name').textContent = `Hola, ${localStorage.getItem('userName')}`;
+                document.getElementById('user-name').textContent = `Hola, ${localStorage.getItem('userUsername')}`;
             }
             
             cargarCarrito();
@@ -136,7 +139,7 @@
 
         function vaciarCarrito() {
             if (confirm('¿Estás seguro de que quieres vaciar el carrito?')) {
-                vaciarCarrito();
+                clearCarrito();
                 cargarCarrito();
             }
         }
@@ -171,11 +174,8 @@
                 successContainer.textContent = '¡Pedido realizado exitosamente!';
                 successContainer.style.display = 'block';
                 
-                vaciarCarrito();
-                cargarCarrito();
-                
                 setTimeout(() => {
-                    window.location.href = 'index.html';
+                    window.location.href = 'pedidos-en-construccion.html';
                 }, 2000);
             } catch (error) {
                 errorContainer.textContent = 'Error al realizar el pedido: ' + error.message;

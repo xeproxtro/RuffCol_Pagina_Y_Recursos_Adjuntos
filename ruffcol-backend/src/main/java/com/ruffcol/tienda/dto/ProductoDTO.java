@@ -23,8 +23,7 @@ public class ProductoDTO {
     @Min(value = 0, message = "El stock no puede ser negativo")
     private Integer stock;
     
-    @Size(max = 255, message = "La URL de la imagen no puede exceder 255 caracteres")
-    private String imagenUrl;
+    private String imagen; // Base64 string
     
     private Integer categoriaId;
     private String categoriaNombre;
@@ -32,13 +31,13 @@ public class ProductoDTO {
     public ProductoDTO() {
     }
     
-    public ProductoDTO(Integer id, String nombre, String descripcion, BigDecimal precio, Integer stock, String imagenUrl, Integer categoriaId, String categoriaNombre) {
+    public ProductoDTO(Integer id, String nombre, String descripcion, BigDecimal precio, Integer stock, String imagen, Integer categoriaId, String categoriaNombre) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.precio = precio;
         this.stock = stock;
-        this.imagenUrl = imagenUrl;
+        this.imagen = imagen;
         this.categoriaId = categoriaId;
         this.categoriaNombre = categoriaNombre;
     }
@@ -83,12 +82,12 @@ public class ProductoDTO {
         this.stock = stock;
     }
     
-    public String getImagenUrl() {
-        return imagenUrl;
+    public String getImagen() {
+        return imagen;
     }
     
-    public void setImagenUrl(String imagenUrl) {
-        this.imagenUrl = imagenUrl;
+    public void setImagen(String imagen) {
+        this.imagen = imagen;
     }
     
     public Integer getCategoriaId() {

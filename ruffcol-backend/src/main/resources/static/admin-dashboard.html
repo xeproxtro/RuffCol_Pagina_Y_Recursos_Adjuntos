@@ -13,7 +13,10 @@
     <header>
         <div class="container">
             <nav>
-                <a href="index.html" class="logo">🐾 Ruffcol Admin</a>
+                <a href="index.html" class="logo">
+                    <img src="images/logo.jpg" alt="Ruffcol Logo" style="height: 40px; width: auto; margin-right: 10px;">
+                    Ruffcol Admin
+                </a>
                 <ul class="nav-links">
                     <li><a href="index.html">Tienda</a></li>
                     <li><a href="#" onclick="logout()">Cerrar Sesión</a></li>
@@ -221,8 +224,8 @@
                 document.getElementById('producto-precio').value = producto.precio;
                 document.getElementById('producto-stock').value = producto.stock;
                 document.getElementById('producto-imagen-file').value = ''; // Limpiar input de archivo
-                
-                if (producto.imagenUrl) {
+
+                if (producto.imagen) {
                     const imagenInfo = document.createElement('div');
                     imagenInfo.style.marginTop = '10px';
                     imagenInfo.style.padding = '10px';
@@ -230,9 +233,9 @@
                     imagenInfo.style.borderRadius = '8px';
                     imagenInfo.innerHTML = `
                         <small style="color: var(--color-text-secondary);">Imagen actual:</small><br>
-                        <img src="${producto.imagenUrl}" alt="Imagen actual" style="max-width: 100px; max-height: 100px; margin-top: 5px; border-radius: 4px;">
+                        <img src="data:image/jpeg;base64,${producto.imagen}" alt="Imagen actual" style="max-width: 100px; max-height: 100px; margin-top: 5px; border-radius: 4px;">
                     `;
-                    
+
                     // Reemplazar el label del input de archivo
                     const imagenLabel = document.getElementById('producto-imagen-file').parentElement;
                     if (!imagenLabel.querySelector('.imagen-actual')) {

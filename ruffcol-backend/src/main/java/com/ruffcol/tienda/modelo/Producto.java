@@ -33,9 +33,9 @@ public class Producto {
     @Column(nullable = false)
     private Integer stock;
     
-    @Size(max = 255, message = "La URL de la imagen no puede exceder 255 caracteres")
-    @Column(length = 255)
-    private String imagenUrl;
+    @Lob
+    @Column(columnDefinition = "BLOB")
+    private byte[] imagen;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_categoria", nullable = false)
@@ -49,12 +49,12 @@ public class Producto {
     }
     
     // Constructor con campos
-    public Producto(String nombre, String descripcion, BigDecimal precio, Integer stock, String imagenUrl, Categoria categoria) {
+    public Producto(String nombre, String descripcion, BigDecimal precio, Integer stock, byte[] imagen, Categoria categoria) {
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.precio = precio;
         this.stock = stock;
-        this.imagenUrl = imagenUrl;
+        this.imagen = imagen;
         this.categoria = categoria;
     }
     
@@ -99,12 +99,12 @@ public class Producto {
         this.stock = stock;
     }
     
-    public String getImagenUrl() {
-        return imagenUrl;
+    public byte[] getImagen() {
+        return imagen;
     }
     
-    public void setImagenUrl(String imagenUrl) {
-        this.imagenUrl = imagenUrl;
+    public void setImagen(byte[] imagen) {
+        this.imagen = imagen;
     }
     
     public Categoria getCategoria() {

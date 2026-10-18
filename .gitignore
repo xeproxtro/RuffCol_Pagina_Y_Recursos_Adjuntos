@@ -46,6 +46,7 @@ nbdist/
 uploads/
 logs/
 *.log
+data/
 
 # OS
 .DS_Store

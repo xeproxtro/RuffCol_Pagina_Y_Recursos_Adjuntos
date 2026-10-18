@@ -34,21 +34,21 @@ public class AuthController {
     }
     
     @PostMapping("/login")
-    @Operation(summary = "Iniciar sesión", description = "Autentica un usuario con email y contraseña y retorna token JWT")
+    @Operation(summary = "Iniciar sesión", description = "Autentica un usuario con nombre de usuario y contraseña y retorna token JWT")
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody AuthDTO authDTO) {
         Usuario usuario = usuarioService.autenticar(authDTO);
-        
+
         // Generar token JWT
-        String token = jwtUtil.generateToken(usuario.getId(), usuario.getEmail(), usuario.getRol().name());
-        
+        String token = jwtUtil.generateToken(usuario.getId(), usuario.getUsername(), usuario.getRol().name());
+
         LoginResponseDTO response = new LoginResponseDTO(
             token,
             usuario.getId(),
             usuario.getNombre(),
-            usuario.getEmail(),
+            usuario.getUsername(),
             usuario.getRol().name()
         );
-        
+
         return ResponseEntity.ok(response);
     }
 }

@@ -30,51 +30,53 @@ public class UsuarioServiceImpl implements UsuarioService {
     
     @Override
     public UsuarioDTO registrarCliente(RegistroClienteDTO registroDTO) {
-        if (usuarioRepository.existsByEmail(registroDTO.getEmail())) {
-            throw new BadRequestException("El email ya está registrado");
+        if (usuarioRepository.existsByUsername(registroDTO.getUsername())) {
+            throw new BadRequestException("El nombre de usuario ya está registrado");
         }
-        
+
         Usuario usuario = new Usuario();
         usuario.setNombre(registroDTO.getNombre());
+        usuario.setUsername(registroDTO.getUsername());
         usuario.setEmail(registroDTO.getEmail());
         usuario.setPassword(passwordEncoder.encode(registroDTO.getPassword()));
         usuario.setRol(Rol.CLIENTE);
         usuario.setEstadoCuenta(EstadoCuenta.ACTIVO);
-        
+
         Usuario guardado = usuarioRepository.save(usuario);
         return convertirADTO(guardado);
     }
     
     @Override
     public UsuarioDTO crearAdministrador(RegistroClienteDTO registroDTO) {
-        if (usuarioRepository.existsByEmail(registroDTO.getEmail())) {
-            throw new BadRequestException("El email ya está registrado");
+        if (usuarioRepository.existsByUsername(registroDTO.getUsername())) {
+            throw new BadRequestException("El nombre de usuario ya está registrado");
         }
-        
+
         Usuario usuario = new Usuario();
         usuario.setNombre(registroDTO.getNombre());
+        usuario.setUsername(registroDTO.getUsername());
         usuario.setEmail(registroDTO.getEmail());
         usuario.setPassword(passwordEncoder.encode(registroDTO.getPassword()));
         usuario.setRol(Rol.ADMIN);
         usuario.setEstadoCuenta(EstadoCuenta.ACTIVO);
-        
+
         Usuario guardado = usuarioRepository.save(usuario);
         return convertirADTO(guardado);
     }
     
     @Override
     public Usuario autenticar(AuthDTO authDTO) {
-        Usuario usuario = usuarioRepository.findByEmail(authDTO.getEmail())
+        Usuario usuario = usuarioRepository.findByUsername(authDTO.getUsername())
             .orElseThrow(() -> new UnauthorizedException("Credenciales inválidas"));
-        
+
         if (!passwordEncoder.matches(authDTO.getPassword(), usuario.getPassword())) {
             throw new UnauthorizedException("Credenciales inválidas");
         }
-        
+
         if (usuario.getEstadoCuenta() != EstadoCuenta.ACTIVO) {
             throw new UnauthorizedException("La cuenta no está activa. Estado: " + usuario.getEstadoCuenta());
         }
-        
+
         return usuario;
     }
     
@@ -119,6 +121,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         return new UsuarioDTO(
             usuario.getId(),
             usuario.getNombre(),
+            usuario.getUsername(),
             usuario.getEmail(),
             usuario.getRol(),
             usuario.getEstadoCuenta(),

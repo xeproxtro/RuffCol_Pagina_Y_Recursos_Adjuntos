@@ -58,8 +58,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/categorias/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .requestMatchers("/api/productos/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .requestMatchers("/api/superadmin/**").hasRole("SUPER_ADMIN")
-                .requestMatchers("/api/pedidos").hasAnyRole("ADMIN", "SUPER_ADMIN")
-                .requestMatchers("/api/pedidos/**").authenticated()
+                .requestMatchers("/api/pedidos").authenticated()
+                .requestMatchers("/api/pedidos/mis-pedidos").authenticated()
+                .requestMatchers("/api/pedidos/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 // Documentación OpenAPI/Swagger
                 .requestMatchers("/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                 // H2 Console

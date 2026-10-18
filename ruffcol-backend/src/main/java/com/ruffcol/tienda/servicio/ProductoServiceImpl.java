@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,15 +34,20 @@ public class ProductoServiceImpl implements ProductoService {
     public ProductoDTO crear(ProductoDTO productoDTO) {
         Categoria categoria = categoriaRepository.findById(productoDTO.getCategoriaId())
             .orElseThrow(() -> new ResourceNotFoundException("Categoría", productoDTO.getCategoriaId()));
-        
+
         Producto producto = new Producto();
         producto.setNombre(productoDTO.getNombre());
         producto.setDescripcion(productoDTO.getDescripcion());
         producto.setPrecio(productoDTO.getPrecio());
         producto.setStock(productoDTO.getStock());
-        producto.setImagenUrl(productoDTO.getImagenUrl());
-        producto.setCategoria(categoria);
         
+        // Convertir base64 a bytes si existe imagen
+        if (productoDTO.getImagen() != null && !productoDTO.getImagen().isEmpty()) {
+            producto.setImagen(Base64.getDecoder().decode(productoDTO.getImagen()));
+        }
+        
+        producto.setCategoria(categoria);
+
         Producto guardado = productoRepository.save(producto);
         return convertirADTO(guardado);
     }
@@ -50,20 +56,24 @@ public class ProductoServiceImpl implements ProductoService {
     public ProductoDTO crearConImagen(String nombre, String descripcion, BigDecimal precio, Integer stock, Integer categoriaId, MultipartFile imagen) {
         Categoria categoria = categoriaRepository.findById(categoriaId)
             .orElseThrow(() -> new ResourceNotFoundException("Categoría", categoriaId));
-        
-        String imagenUrl = "";
-        if (imagen != null && !imagen.isEmpty()) {
-            imagenUrl = fileStorageService.storeFile(imagen);
-        }
-        
+
         Producto producto = new Producto();
         producto.setNombre(nombre);
         producto.setDescripcion(descripcion);
         producto.setPrecio(precio);
         producto.setStock(stock);
-        producto.setImagenUrl(imagenUrl);
+
+        // Convertir MultipartFile a bytes (BLOB)
+        if (imagen != null && !imagen.isEmpty()) {
+            try {
+                producto.setImagen(imagen.getBytes());
+            } catch (Exception e) {
+                throw new BadRequestException("Error al procesar la imagen: " + e.getMessage());
+            }
+        }
+
         producto.setCategoria(categoria);
-        
+
         Producto guardado = productoRepository.save(producto);
         return convertirADTO(guardado);
     }
@@ -72,27 +82,25 @@ public class ProductoServiceImpl implements ProductoService {
     public ProductoDTO actualizarConImagen(Integer id, String nombre, String descripcion, BigDecimal precio, Integer stock, Integer categoriaId, MultipartFile imagen) {
         Producto producto = productoRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Producto", id));
-        
+
         Categoria categoria = categoriaRepository.findById(categoriaId)
             .orElseThrow(() -> new ResourceNotFoundException("Categoría", categoriaId));
-        
-        // Eliminar imagen anterior si se sube una nueva
-        if (imagen != null && !imagen.isEmpty() && producto.getImagenUrl() != null) {
-            fileStorageService.deleteFile(producto.getImagenUrl());
-        }
-        
-        String imagenUrl = producto.getImagenUrl();
+
+        // Actualizar imagen si se proporciona una nueva
         if (imagen != null && !imagen.isEmpty()) {
-            imagenUrl = fileStorageService.storeFile(imagen);
+            try {
+                producto.setImagen(imagen.getBytes());
+            } catch (Exception e) {
+                throw new BadRequestException("Error al procesar la imagen: " + e.getMessage());
+            }
         }
-        
+
         producto.setNombre(nombre);
         producto.setDescripcion(descripcion);
         producto.setPrecio(precio);
         producto.setStock(stock);
-        producto.setImagenUrl(imagenUrl);
         producto.setCategoria(categoria);
-        
+
         Producto actualizado = productoRepository.save(producto);
         return convertirADTO(actualizado);
     }
@@ -122,17 +130,22 @@ public class ProductoServiceImpl implements ProductoService {
     public ProductoDTO actualizar(Integer id, ProductoDTO productoDTO) {
         Producto producto = productoRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Producto", id));
-        
+
         Categoria categoria = categoriaRepository.findById(productoDTO.getCategoriaId())
             .orElseThrow(() -> new ResourceNotFoundException("Categoría", productoDTO.getCategoriaId()));
-        
+
         producto.setNombre(productoDTO.getNombre());
         producto.setDescripcion(productoDTO.getDescripcion());
         producto.setPrecio(productoDTO.getPrecio());
         producto.setStock(productoDTO.getStock());
-        producto.setImagenUrl(productoDTO.getImagenUrl());
+
+        // Actualizar imagen si se proporciona
+        if (productoDTO.getImagen() != null && !productoDTO.getImagen().isEmpty()) {
+            producto.setImagen(Base64.getDecoder().decode(productoDTO.getImagen()));
+        }
+
         producto.setCategoria(categoria);
-        
+
         Producto actualizado = productoRepository.save(producto);
         return convertirADTO(actualizado);
     }
@@ -147,13 +160,18 @@ public class ProductoServiceImpl implements ProductoService {
     
     @Override
     public ProductoDTO convertirADTO(Producto producto) {
+        String imagenBase64 = null;
+        if (producto.getImagen() != null && producto.getImagen().length > 0) {
+            imagenBase64 = Base64.getEncoder().encodeToString(producto.getImagen());
+        }
+
         return new ProductoDTO(
             producto.getId(),
             producto.getNombre(),
             producto.getDescripcion(),
             producto.getPrecio(),
             producto.getStock(),
-            producto.getImagenUrl(),
+            imagenBase64,
             producto.getCategoria().getId(),
             producto.getCategoria().getNombre()
         );

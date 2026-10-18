@@ -5,6 +5,7 @@ import com.ruffcol.tienda.exception.BadRequestException;
 import com.ruffcol.tienda.exception.ResourceNotFoundException;
 import com.ruffcol.tienda.modelo.Categoria;
 import com.ruffcol.tienda.repositorio.CategoriaRepository;
+import com.ruffcol.tienda.repositorio.ProductoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,9 @@ public class CategoriaServiceImpl implements CategoriaService {
     
     @Autowired
     private CategoriaRepository categoriaRepository;
+
+    @Autowired
+    private ProductoRepository productoRepository;
     
     @Override
     public CategoriaDTO crear(CategoriaDTO categoriaDTO) {
@@ -69,6 +73,13 @@ public class CategoriaServiceImpl implements CategoriaService {
         if (!categoriaRepository.existsById(id)) {
             throw new ResourceNotFoundException("Categoría", id);
         }
+
+        // Verificar si hay productos asociados a esta categoría
+        List<?> productos = productoRepository.findByCategoriaId(id);
+        if (!productos.isEmpty()) {
+            throw new BadRequestException("No se puede eliminar la categoría porque tiene productos asociados. Elimine o reasigne los productos primero.");
+        }
+
         categoriaRepository.deleteById(id);
     }
     
