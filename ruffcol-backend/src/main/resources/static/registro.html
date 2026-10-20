@@ -4,74 +4,125 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Cliente - Ruffcol</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/styles.css">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
+            border: none;
+            padding: 12px;
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #e67d00 0%, #e05e00 100%);
+        }
+        .input-group-text {
+            background-color: #808080;
+            color: white;
+            border: 1px solid #808080;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <nav>
-                <a href="index.html" class="logo">
-                    <img src="images/logo.jpg" alt="Ruffcol Logo" style="height: 40px; width: auto; margin-right: 10px;">
-                    Ruffcol
-                </a>
-                <ul class="nav-links">
-                    <li><a href="index.html">Inicio</a></li>
-                    <li><a href="login.html">Iniciar Sesión</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card login-card">
+                    <div class="card-header text-center">
+                        <h4 class="mb-0">Registro de Cliente</h4>
+                        <small>Únete a Ruffcol</small>
+                    </div>
+                    <div class="card-body p-4">
+                        <div id="error-container" class="alert alert-danger" style="display: none;"></div>
+                        <div id="success-container" class="alert alert-success" style="display: none;"></div>
 
-    <main class="container" style="margin-top: 50px; max-width: 500px;">
-        <div class="card">
-            <div class="card-header">
-                <h1>Registro de Cliente</h1>
+                        <form id="registro-form">
+                            <div class="mb-3">
+                                <label for="nombre" class="form-label">Nombre completo</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                    <input type="text" class="form-control" id="nombre" required placeholder="Tu nombre completo">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Nombre de usuario</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-at"></i></span>
+                                    <input type="text" class="form-control" id="username" required placeholder="Tu nombre de usuario">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email (opcional)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                    <input type="email" class="form-control" id="email" placeholder="tu@email.com">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Contraseña (mínimo 6 caracteres)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                    <input type="password" class="form-control" id="password" required minlength="6" placeholder="Tu contraseña">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="confirm-password" class="form-label">Confirmar contraseña</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                                    <input type="password" class="form-control" id="confirm-password" required placeholder="Confirma tu contraseña">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">Registrarse como Cliente</button>
+                        </form>
+
+                        <div class="text-center mt-3">
+                            <p class="mb-0">¿Ya tienes cuenta? <a href="login.html" class="text-decoration-none">Inicia sesión aquí</a></p>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a href="index.html" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-house"></i> Volver al Inicio
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <div id="error-container" class="alert alert-danger" style="display: none;"></div>
-            <div id="success-container" class="alert alert-success" style="display: none;"></div>
-            
-            <form id="registro-form">
-                <div class="form-group">
-                    <label for="nombre">Nombre completo:</label>
-                    <input type="text" id="nombre" class="form-control" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="username">Nombre de usuario:</label>
-                    <input type="text" id="username" class="form-control" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="email">Email (opcional):</label>
-                    <input type="email" id="email" class="form-control">
-                </div>
-
-                <div class="form-group">
-                    <label for="password">Contraseña (mínimo 6 caracteres):</label>
-                    <input type="password" id="password" class="form-control" required minlength="6">
-                </div>
-
-                <div class="form-group">
-                    <label for="confirm-password">Confirmar contraseña:</label>
-                    <input type="password" id="confirm-password" class="form-control" required>
-                </div>
-
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Registrarse como Cliente</button>
-            </form>
-            
-            <p style="margin-top: 20px; text-align: center;">
-                ¿Ya tienes cuenta? <a href="login.html">Inicia sesión aquí</a>
-            </p>
         </div>
-    </main>
+    </div>
 
-    <script src="js/api.js"></script>
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Request.js -->
+    <script src="js/request.js"></script>
     <script>
-        document.getElementById('registro-form').addEventListener('submit', async (e) => {
+        document.getElementById('registro-form').addEventListener('submit', function(e) {
             e.preventDefault();
 
             const nombre = document.getElementById('nombre').value;
@@ -91,18 +142,26 @@
                 return;
             }
 
-            try {
-                const usuario = await registerCliente(nombre, username, email, password);
-                successContainer.textContent = '¡Registro exitoso! Ahora puedes iniciar sesión.';
-                successContainer.style.display = 'block';
+            const data = {
+                nombre: nombre,
+                username: username,
+                email: email,
+                password: password
+            };
 
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 2000);
-            } catch (error) {
-                errorContainer.textContent = 'Error al registrarse: ' + error.message;
-                errorContainer.style.display = 'block';
-            }
+            post('/api/auth/register-cliente', data)
+                .then(function(response) {
+                    successContainer.textContent = '¡Registro exitoso! Ahora puedes iniciar sesión.';
+                    successContainer.style.display = 'block';
+
+                    setTimeout(function() {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                })
+                .catch(function(error) {
+                    errorContainer.textContent = 'Error al registrarse: ' + error.message;
+                    errorContainer.style.display = 'block';
+                });
         });
     </script>
 </body>

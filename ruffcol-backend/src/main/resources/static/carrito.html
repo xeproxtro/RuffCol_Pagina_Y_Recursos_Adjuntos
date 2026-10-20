@@ -4,183 +4,270 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carrito de Compras - Ruffcol</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/styles.css">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
+            min-height: 100vh;
+        }
+        .navbar-custom {
+            background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .navbar-brand {
+            color: white !important;
+            font-weight: 700;
+        }
+        .nav-link {
+            color: white !important;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #e67d00 0%, #e05e00 100%);
+        }
+        .btn-secondary {
+            background-color: #808080;
+            border-color: #696969;
+        }
+        .btn-secondary:hover {
+            background-color: #696969;
+        }
+        .btn-success {
+            background-color: #28a745;
+        }
+    </style>
 </head>
 <body>
-    <header>
+    <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
-            <nav>
-                <a href="index.html" class="logo">
-                    <img src="images/logo.jpg" alt="Ruffcol Logo" style="height: 40px; width: auto; margin-right: 10px;">
-                    Ruffcol
-                </a>
-                <ul class="nav-links">
-                    <li><a href="index.html">Inicio</a></li>
-                    <li id="auth-links">
-                        <a href="login.html">Iniciar Sesión</a>
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-heart-fill"></i> Ruffcol
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Inicio</a>
                     </li>
-                    <li id="user-links" style="display: none;">
-                        <span id="user-name"></span>
-                        <a href="#" onclick="logout()">Cerrar Sesión</a>
+                    <li class="nav-item">
+                        <a class="nav-link" href="mis-pedidos.html">Mis Pedidos</a>
                     </li>
                 </ul>
-            </nav>
+                <ul class="navbar-nav" id="auth-links">
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html">Iniciar Sesión</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav" id="user-links" style="display: none;">
+                    <li class="nav-item">
+                        <span class="nav-link" id="user-name"></span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="logout()">Cerrar Sesión</a>
+                    </li>
+                </ul>
+            </div>
         </div>
-    </header>
+    </nav>
 
-    <main class="container" style="margin-top: 30px;">
+    <div class="container py-4">
         <div class="card">
             <div class="card-header">
-                <h1>Carrito de Compras</h1>
+                <h3 class="mb-0">Carrito de Compras</h3>
             </div>
-            
-            <div id="error-container" class="alert alert-danger" style="display: none;"></div>
-            <div id="success-container" class="alert alert-success" style="display: none;"></div>
-            
-            <div id="carrito-vacio" style="text-align: center; padding: 40px; display: none;">
-                <p style="font-size: 1.2rem; color: #666;">Tu carrito está vacío</p>
-                <a href="index.html" class="btn btn-primary" style="margin-top: 20px;">Ir al Catálogo</a>
-            </div>
-            
-            <div id="carrito-items"></div>
-            
-            <div id="carrito-total" class="cart-total" style="display: none;">
-                Total: $<span id="total-amount">0.00</span>
-            </div>
-            
-            <div id="carrito-acciones" style="margin-top: 20px; text-align: right; display: none;">
-                <button class="btn btn-secondary" onclick="vaciarCarrito()">Vaciar Carrito</button>
-                <button class="btn btn-success" onclick="realizarPedido()">Realizar Pedido</button>
+            <div class="card-body">
+                <div id="error-container" class="alert alert-danger" style="display: none;"></div>
+                <div id="success-container" class="alert alert-success" style="display: none;"></div>
+
+                <div id="carrito-vacio" class="text-center py-5" style="display: none;">
+                    <i class="bi bi-cart-x display-1 text-muted"></i>
+                    <p class="mt-3 fs-4 text-muted">Tu carrito está vacío</p>
+                    <a href="index.html" class="btn btn-primary mt-3">Ir al Catálogo</a>
+                </div>
+
+                <div id="carrito-items" class="table-responsive" style="display: none;">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Producto</th>
+                                <th>Precio</th>
+                                <th>Cantidad</th>
+                                <th>Subtotal</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="carrito-table-body"></tbody>
+                    </table>
+                </div>
+
+                <div id="carrito-total" class="text-end mt-4" style="display: none;">
+                    <h4>Total: $<span id="total-amount">0.00</span></h4>
+                </div>
+
+                <div id="carrito-acciones" class="d-flex justify-content-end gap-2 mt-4" style="display: none;">
+                    <button class="btn btn-secondary" onclick="vaciarCarrito()">
+                        <i class="bi bi-trash"></i> Vaciar Carrito
+                    </button>
+                    <button class="btn btn-success" onclick="realizarPedido()">
+                        <i class="bi bi-check-circle"></i> Realizar Pedido
+                    </button>
+                </div>
             </div>
         </div>
-    </main>
+    </div>
 
-    <script src="js/api.js"></script>
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Request.js -->
+    <script src="js/request.js"></script>
+    <!-- Carrito.js -->
+    <script src="js/carrito.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Verificar autenticación al cargar el carrito
+        document.addEventListener('DOMContentLoaded', function() {
             if (!isAuthenticated()) {
                 alert('Debes iniciar sesión para ver tu carrito');
                 localStorage.setItem('redirectAfterLogin', 'carrito.html');
                 window.location.href = 'login.html';
                 return;
             }
-            
-            if (isAuthenticated()) {
-                document.getElementById('auth-links').style.display = 'none';
-                document.getElementById('user-links').style.display = 'flex';
-                document.getElementById('user-name').textContent = `Hola, ${localStorage.getItem('userUsername')}`;
-            }
-            
+
+            document.getElementById('auth-links').style.display = 'none';
+            document.getElementById('user-links').style.display = 'flex';
+            document.getElementById('user-name').textContent = 'Hola, ' + getUsername();
+
             cargarCarrito();
         });
 
         function cargarCarrito() {
             const carrito = getCarrito();
-            const container = document.getElementById('carrito-items');
-            const vacioContainer = document.getElementById('carrito-vacio');
-            const totalContainer = document.getElementById('carrito-total');
-            const accionesContainer = document.getElementById('carrito-acciones');
-            
+            const carritoVacio = document.getElementById('carrito-vacio');
+            const carritoItems = document.getElementById('carrito-items');
+            const carritoTotal = document.getElementById('carrito-total');
+            const carritoAcciones = document.getElementById('carrito-acciones');
+            const tableBody = document.getElementById('carrito-table-body');
+            const totalAmount = document.getElementById('total-amount');
+
             if (carrito.length === 0) {
-                container.innerHTML = '';
-                vacioContainer.style.display = 'block';
-                totalContainer.style.display = 'none';
-                accionesContainer.style.display = 'none';
-                return;
+                carritoVacio.style.display = 'block';
+                carritoItems.style.display = 'none';
+                carritoTotal.style.display = 'none';
+                carritoAcciones.style.display = 'none';
+            } else {
+                carritoVacio.style.display = 'none';
+                carritoItems.style.display = 'block';
+                carritoTotal.style.display = 'block';
+                carritoAcciones.style.display = 'flex';
+
+                tableBody.innerHTML = '';
+                let total = 0;
+
+                carrito.forEach(function(item) {
+                    const subtotal = item.precio * item.cantidad;
+                    total += subtotal;
+                    const imagenSrc = item.imagen
+                        ? 'data:image/jpeg;base64,' + item.imagen
+                        : 'https://via.placeholder.com/50';
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="${imagenSrc}" class="rounded me-2" style="width: 50px; height: 50px; object-fit: cover;" alt="${item.nombre}">
+                                <span>${item.nombre}</span>
+                            </div>
+                        </td>
+                        <td>$${item.precio}</td>
+                        <td>
+                            <div class="input-group" style="width: 120px;">
+                                <button class="btn btn-outline-secondary btn-sm" onclick="cambiarCantidad(${item.productoId}, ${item.cantidad - 1})">-</button>
+                                <input type="number" class="form-control text-center" value="${item.cantidad}" min="1" readonly>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="cambiarCantidad(${item.productoId}, ${item.cantidad + 1})">+</button>
+                            </div>
+                        </td>
+                        <td>$${subtotal.toFixed(2)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarItemCarrito(${item.productoId})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                totalAmount.textContent = total.toFixed(2);
             }
-            
-            vacioContainer.style.display = 'none';
-            totalContainer.style.display = 'block';
-            accionesContainer.style.display = 'block';
-            
-            container.innerHTML = '';
-            
-            carrito.forEach(item => {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'cart-item';
-                itemDiv.innerHTML = `
-                    <div class="cart-item-info">
-                        <div class="cart-item-name">${item.nombre}</div>
-                        <div class="cart-item-price">$${item.precio.toFixed(2)}</div>
-                    </div>
-                    <div class="cart-item-quantity">
-                        <button class="btn btn-secondary" onclick="cambiarCantidad(${item.productoId}, -1)">-</button>
-                        <span>${item.cantidad}</span>
-                        <button class="btn btn-secondary" onclick="cambiarCantidad(${item.productoId}, 1)">+</button>
-                        <button class="btn btn-danger" onclick="eliminarItem(${item.productoId})">Eliminar</button>
-                    </div>
-                `;
-                container.appendChild(itemDiv);
-            });
-            
-            const total = calcularTotalCarrito();
-            document.getElementById('total-amount').textContent = total.toFixed(2);
         }
 
-        function cambiarCantidad(productoId, cambio) {
-            const carrito = getCarrito();
-            const item = carrito.find(i => i.productoId === productoId);
-            
-            if (item) {
-                const nuevaCantidad = item.cantidad + cambio;
-                actualizarCantidadCarrito(productoId, nuevaCantidad);
-                cargarCarrito();
-            }
+        function cambiarCantidad(productoId, nuevaCantidad) {
+            actualizarCantidadCarrito(productoId, nuevaCantidad);
+            cargarCarrito();
         }
 
-        function eliminarItem(productoId) {
+        function eliminarItemCarrito(productoId) {
             eliminarDelCarrito(productoId);
             cargarCarrito();
         }
 
         function vaciarCarrito() {
-            if (confirm('¿Estás seguro de que quieres vaciar el carrito?')) {
+            if (confirm('¿Estás seguro de vaciar el carrito?')) {
                 clearCarrito();
                 cargarCarrito();
             }
         }
 
-        async function realizarPedido() {
-            if (!isAuthenticated()) {
-                alert('Debes iniciar sesión para realizar un pedido');
-                window.location.href = 'login.html';
-                return;
-            }
-            
+        function realizarPedido() {
             const carrito = getCarrito();
+            const errorContainer = document.getElementById('error-container');
+            const successContainer = document.getElementById('success-container');
+
             if (carrito.length === 0) {
                 alert('El carrito está vacío');
                 return;
             }
-            
-            const errorContainer = document.getElementById('error-container');
-            const successContainer = document.getElementById('success-container');
-            
+
             errorContainer.style.display = 'none';
             successContainer.style.display = 'none';
-            
-            try {
-                const items = carrito.map(item => ({
-                    productoId: item.productoId,
-                    cantidad: item.cantidad
-                }));
-                
-                await createPedido(items);
-                
-                successContainer.textContent = '¡Pedido realizado exitosamente!';
-                successContainer.style.display = 'block';
-                
-                setTimeout(() => {
-                    window.location.href = 'pedidos-en-construccion.html';
-                }, 2000);
-            } catch (error) {
-                errorContainer.textContent = 'Error al realizar el pedido: ' + error.message;
-                errorContainer.style.display = 'block';
-            }
+
+            const pedido = {
+                items: carrito.map(function(item) {
+                    return {
+                        productoId: item.productoId,
+                        cantidad: item.cantidad
+                    };
+                })
+            };
+
+            post('/api/pedidos', pedido, getToken())
+                .then(function(response) {
+                    clearCarrito();
+                    successContainer.textContent = '¡Pedido realizado exitosamente! Redirigiendo...';
+                    successContainer.style.display = 'block';
+
+                    setTimeout(function() {
+                        window.location.href = 'mis-pedidos.html';
+                    }, 2000);
+                })
+                .catch(function(error) {
+                    errorContainer.textContent = 'Error al realizar pedido: ' + error.message;
+                    errorContainer.style.display = 'block';
+                });
         }
     </script>
 </body>

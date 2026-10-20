@@ -76,6 +76,44 @@ function del(endpoint, token = null) {
 }
 
 /**
+ * Sube un FormData (multipart/form-data) usando XMLHttpRequest.
+ * No se establece Content-Type manualmente para que el navegador agregue el boundary.
+ * @param {string} method - 'POST' o 'PUT'
+ * @param {string} endpoint - Endpoint de la API
+ * @param {FormData} formData - Datos del formulario incluyendo archivos
+ * @param {string} token - Token JWT (opcional)
+ * @returns {Promise} Promise con la respuesta JSON
+ */
+function uploadFormData(method, endpoint, formData, token = null) {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const url = API_BASE_URL + endpoint;
+
+        xhr.open(method, url, true);
+        xhr.responseType = 'json';
+
+        if (token) {
+            xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        }
+
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                resolve(xhr.response);
+            } else {
+                const error = xhr.response || { message: 'Error en la petición' };
+                reject(new Error(error.message || `Error ${xhr.status}`));
+            }
+        };
+
+        xhr.onerror = function() {
+            reject(new Error('Error de red'));
+        };
+
+        xhr.send(formData);
+    });
+}
+
+/**
  * Obtiene el token JWT del localStorage
  */
 function getToken() {
@@ -154,6 +192,7 @@ window.get = get;
 window.post = post;
 window.put = put;
 window.del = del;
+window.uploadFormData = uploadFormData;
 window.getToken = getToken;
 window.setToken = setToken;
 window.removeToken = removeToken;
