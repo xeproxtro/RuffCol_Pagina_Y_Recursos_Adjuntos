@@ -2,7 +2,10 @@
 
 ![Ruffcol Logo](https://via.placeholder.com/150?text=Ruffcol)
 
-Sistema de e-commerce para la gestión de una tienda de ropa y accesorios para mascotas, desarrollado con Spring Boot (backend) y JavaScript genérico con Bootstrap 5 (frontend).
+Sistema de e-commerce para la gestión de una tienda de ropa y accesorios para mascotas. El proyecto incluye **dos opciones de implementación**:
+
+1. **Backend Node.js + Frontend React** (Nueva implementación recomendada)
+2. **Backend Java/Spring Boot + Frontend HTML/JS** (Implementación original)
 
 ---
 
@@ -58,7 +61,27 @@ Ruffcol es una plataforma de comercio electrónico diseñada para la venta de ro
 
 ## 🛠️ Tecnologías Utilizadas
 
-### Backend
+### Opción 1: Backend Node.js + Frontend React (Recomendado)
+
+#### Backend Node.js
+- **Node.js 18+** - Entorno de ejecución JavaScript
+- **Express** - Framework web
+- **SQLite3** - Base de datos ligera
+- **bcryptjs** - Encriptación de contraseñas
+- **jsonwebtoken** - Autenticación JWT
+- **cors** - Habilita CORS
+- **multer** - Subida de archivos
+
+#### Frontend React
+- **React 18** - Framework de UI
+- **React Router DOM** - Enrutamiento
+- **Axios** - Cliente HTTP
+- **React Bootstrap** - Componentes UI
+- **Vite** - Build tool y servidor de desarrollo
+
+### Opción 2: Backend Java/Spring Boot + Frontend HTML/JS (Original)
+
+#### Backend
 - **Java 17** - Lenguaje de programación
 - **Spring Boot 3.x** - Framework principal
 - **Spring Data JPA** - Persistencia de datos
@@ -68,7 +91,7 @@ Ruffcol es una plataforma de comercio electrónico diseñada para la venta de ro
 - **Lombok** - Reducción de código boilerplate
 - **Swagger/OpenAPI** - Documentación de API
 
-### Frontend
+#### Frontend
 - **HTML5** - Estructura de las páginas
 - **CSS3** - Estilos personalizados
 - **Bootstrap 5** - Framework CSS para diseño responsivo
@@ -82,7 +105,30 @@ Ruffcol es una plataforma de comercio electrónico diseñada para la venta de ro
 
 ```
 RUFCo Pagina/
-├── ruffcol-backend/                 # Backend Spring Boot
+├── ruffcol-nodejs-backend/          # Backend Node.js/Express (NUEVO)
+│   ├── server.js                    # Servidor Express con SQLite
+│   ├── package.json                 # Dependencias Node.js
+│   └── ruffcol.db                   # Base de datos SQLite (se crea automáticamente)
+├── ruffcol-react-frontend/          # Frontend React (NUEVO)
+│   ├── src/
+│   │   ├── components/              # Componentes React
+│   │   │   ├── Login.jsx
+│   │   │   ├── Register.jsx
+│   │   │   ├── Home.jsx
+│   │   │   ├── Cart.jsx
+│   │   │   ├── MyOrders.jsx
+│   │   │   ├── AdminDashboard.jsx
+│   │   │   ├── SuperAdminDashboard.jsx
+│   │   │   └── Navbar.jsx
+│   │   ├── context/
+│   │   │   └── AuthContext.jsx      # Contexto de autenticación
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   └── index.css
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.js
+├── ruffcol-backend/                 # Backend Spring Boot (ORIGINAL)
 │   ├── src/
 │   │   ├── main/
 │   │   │   ├── java/com/ruffcol/tienda/
@@ -108,6 +154,9 @@ RUFCo Pagina/
 │   │   │       └── application.properties
 │   │   └── test/
 │   └── pom.xml                       # Dependencias Maven
+├── Documentaciones/
+│   ├── INSTALACION_ENTORNO_DESARROLLO.md  # Guía de instalación
+│   └── README_INICIO_RAPIDO.md
 ├── MODELO_MER.md                    # Documentación del modelo de datos
 └── README.md                        # Este archivo
 ```
@@ -137,66 +186,49 @@ Para más detalles, consulta el documento [MODELO_MER.md](MODELO_MER.md).
 
 ## 🚀 Instalación y Configuración
 
-### Requisitos Previos
-- Java Development Kit (JDK) 17 o superior
-- Apache Maven 3.6+
+Para la instalación detallada, consulta el documento [INSTALACION_ENTORNO_DESARROLLO.md](Documentaciones/INSTALACION_ENTORNO_DESARROLLO.md).
+
+### Opción 1: Backend Node.js + Frontend React (Recomendado)
+
+#### Backend Node.js
+```bash
+cd ruffcol-nodejs-backend
+npm install
+npm start
+```
+Servidor disponible en: `http://localhost:3000`
+
+#### Frontend React
+```bash
+cd ruffcol-react-frontend
+npm install
+npm run dev
+```
+Aplicación disponible en: `http://localhost:5173`
+
+**Credenciales por defecto:**
+- Usuario: `superadmin`
+- Contraseña: `admin123`
+
+### Opción 2: Backend Java/Spring Boot + Frontend HTML/JS (Original)
+
+#### Requisitos
+- Java 17+
+- Maven 3.6+
 - MySQL 8.0+
-- Navegador web moderno (Chrome, Firefox, Edge)
 
-### Configuración de la Base de Datos
-
-1. Crear la base de datos en MySQL:
-```sql
-CREATE DATABASE ruffcol_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-2. Configurar las credenciales en `application.properties`:
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/ruffcol_db
-spring.datasource.username=tu_usuario
-spring.datasource.password=tu_contraseña
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-```
-
-### Ejecución del Backend
-
-1. Navegar al directorio del backend:
+#### Backend Spring Boot
 ```bash
 cd ruffcol-backend
-```
-
-2. Compilar el proyecto con Maven:
-```bash
 mvn clean install
-```
-
-3. Ejecutar la aplicación:
-```bash
 mvn spring-boot:run
 ```
+Servidor disponible en: `http://localhost:8094`
 
-La aplicación estará disponible en: `http://localhost:8094`
-
-### Acceso a la Aplicación
-
-Una vez iniciado el backend, accede a través del navegador:
-- **Tienda:** `http://localhost:8094/index.html`
-- **Login:** `http://localhost:8094/login.html`
-- **Registro:** `http://localhost:8094/registro.html`
-- **Panel Admin:** `http://localhost:8094/admin-dashboard.html`
-- **Panel Super Admin:** `http://localhost:8094/superadmin-dashboard.html`
-
-### Credenciales Iniciales
-
-**⚠️ IMPORTANTE:** Antes de usar el sistema, debes crear el primer usuario SUPER_ADMIN a través de un endpoint directo o modificar la base de datos manualmente:
-
-```sql
-INSERT INTO usuario (nombre, username, email, password, rol, estado_cuenta, fecha_registro)
-VALUES ('Super Admin', 'superadmin', 'superadmin@ruffcol.com', '$2a$10$...hash...', 'SUPER_ADMIN', 'ACTIVO', NOW());
-```
-
-Para generar el hash de la contraseña, puedes usar el endpoint de registro o herramientas online de BCrypt.
+El frontend estático está incluido en el backend. Accede a:
+- Tienda: `http://localhost:8094/index.html`
+- Login: `http://localhost:8094/login.html`
+- Registro: `http://localhost:8094/registro.html`
 
 ---
 
@@ -260,19 +292,19 @@ Para generar el hash de la contraseña, puedes usar el endpoint de registro o he
 
 ## 👥 CRUDs por Miembro del Equipo
 
-| Miembro del Equipo | CRUD Asignado | Archivos Relacionados |
-|--------------------|---------------|----------------------|
-| Emmanuel Moreno Rueda | Categorías, Productos | `CategoriaController.java`, `CategoriaService.java`, `ProductoController.java`, `ProductoService.java`, `admin-dashboard.html` |
-| Andres Rodriguez | Pedidos, Usuarios, Carrito | `PedidoController.java`, `PedidoService.java`, `AuthController.java`, `UsuarioService.java`, `carrito.js`, `carrito.html`, `mis-pedidos.html`, `login.html`, `registro.html` |
+| Miembro del Equipo | CRUD Asignado | Archivos Relacionados (Node.js/React) | Archivos Relacionados (Java/HTML) |
+|--------------------|---------------|--------------------------------------|-----------------------------------|
+| Emmanuel Moreno Rueda | Categorías, Productos | `server.js` (rutas categorías/productos), `AdminDashboard.jsx` | `CategoriaController.java`, `CategoriaService.java`, `ProductoController.java`, `ProductoService.java`, `admin-dashboard.html` |
+| Andres Rodriguez | Pedidos, Usuarios, Carrito | `server.js` (rutas pedidos/auth), `Login.jsx`, `Register.jsx`, `Cart.jsx`, `MyOrders.jsx` | `PedidoController.java`, `PedidoService.java`, `AuthController.java`, `UsuarioService.java`, `carrito.js`, `carrito.html`, `mis-pedidos.html`, `login.html`, `registro.html` |
 
 ### Evidencias de Funcionalidad
 
 Cada CRUD incluye:
-- ✅ Página HTML con interfaz de usuario
-- ✅ Controlador REST con endpoints correspondientes
-- ✅ Servicio con lógica de negocio
-- ✅ Repositorio JPA para acceso a datos
-- ✅ Validaciones y manejo de errores
+- ✅ **Backend Node.js:** Endpoints REST con Express y SQLite
+- ✅ **Frontend React:** Componentes React con consumo de API REST (Axios)
+- ✅ **Backend Java:** Controladores REST con Spring Boot y JPA
+- ✅ **Frontend HTML:** Páginas HTML con JavaScript genérico (XMLHttpRequest)
+- ✅ Validaciones y manejo de errores en ambas implementaciones
 
 ---
 
