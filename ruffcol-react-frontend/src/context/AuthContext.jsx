@@ -23,11 +23,28 @@ export function AuthProvider({ children }) {
   }, [])
 
   const login = async (username, password) => {
+    // Trim values to remove any extra spaces
+    const trimmedUsername = username?.trim()
+    const trimmedPassword = password?.trim()
+
+    console.log('🔐 Login attempt:', {
+      originalUsername: username,
+      trimmedUsername,
+      passwordLength: password?.length,
+      trimmedPasswordLength: trimmedPassword?.length
+    })
+
     try {
       const response = await axios.post(`${API_URL}/api/auth/login`, {
-        username,
-        password
+        username: trimmedUsername,
+        password: trimmedPassword
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
       })
+
+      console.log('✅ Login response:', response.data)
 
       const { token, userId, username: userName, nombre, rol, email } = response.data
 
@@ -40,6 +57,10 @@ export function AuthProvider({ children }) {
 
       return { success: true }
     } catch (error) {
+      console.error('❌ Login error:', error.response?.data || error.message)
+      console.error('❌ Full error:', error)
+      console.error('❌ Error status:', error.response?.status)
+      console.error('❌ Error data:', error.response?.data)
       return {
         success: false,
         error: error.response?.data?.error || 'Error al iniciar sesión'

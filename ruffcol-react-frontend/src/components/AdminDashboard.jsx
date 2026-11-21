@@ -33,7 +33,8 @@ function AdminDashboard() {
     descripcion: '',
     precio: '',
     stock: '',
-    categoriaId: ''
+    categoriaId: '',
+    imagen: null
   })
 
   const [categoriaForm, setCategoriaForm] = useState({
@@ -116,29 +117,41 @@ function AdminDashboard() {
   const guardarProducto = async () => {
     try {
       const token = localStorage.getItem('token')
-      const data = {
-        ...productoForm,
-        precio: parseFloat(productoForm.precio),
-        stock: parseInt(productoForm.stock),
-        categoriaId: parseInt(productoForm.categoriaId)
+
+      // Usar FormData para subir archivos
+      const formData = new FormData()
+      formData.append('nombre', productoForm.nombre)
+      formData.append('descripcion', productoForm.descripcion)
+      formData.append('precio', parseFloat(productoForm.precio))
+      formData.append('stock', parseInt(productoForm.stock))
+      formData.append('categoriaId', parseInt(productoForm.categoriaId))
+      if (productoForm.imagen) {
+        formData.append('imagen', productoForm.imagen)
       }
+
       if (editingProducto) {
-        await axios.put(`${API_URL}/api/productos/${editingProducto.id}`, data, {
-          headers: { Authorization: `Bearer ${token}` }
+        await axios.put(`${API_URL}/api/productos/${editingProducto.id}`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
         })
         mostrarMensaje('Producto actualizado')
       } else {
-        await axios.post(`${API_URL}/api/productos`, data, {
-          headers: { Authorization: `Bearer ${token}` }
+        await axios.post(`${API_URL}/api/productos`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
         })
         mostrarMensaje('Producto creado')
       }
       setShowProductoForm(false)
       setEditingProducto(null)
-      setProductoForm({ nombre: '', descripcion: '', precio: '', stock: '', categoriaId: '' })
+      setProductoForm({ nombre: '', descripcion: '', precio: '', stock: '', categoriaId: '', imagen: null })
       cargarDatos()
     } catch (err) {
-      mostrarMensaje('Error al guardar producto', 'error')
+      mostrarMensaje('Error al guardar producto: ' + (err.response?.data?.error || err.message), 'error')
     }
   }
 
@@ -231,7 +244,7 @@ function AdminDashboard() {
                 <h4>Gestión de Productos</h4>
                 <Button variant="success" onClick={() => {
                   setEditingProducto(null)
-                  setProductoForm({ nombre: '', descripcion: '', precio: '', stock: '', categoriaId: '' })
+                  setProductoForm({ nombre: '', descripcion: '', precio: '', stock: '', categoriaId: '', imagen: null })
                   setShowProductoForm(true)
                 }}>
                   <i className="bi bi-plus-lg"></i> Nuevo Producto
@@ -290,6 +303,14 @@ function AdminDashboard() {
                           value={productoForm.stock}
                           onChange={(e) => setProductoForm({...productoForm, stock: e.target.value})}
                           required
+                        />
+                      </Form.Group>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Imagen del producto</Form.Label>
+                        <Form.Control
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => setProductoForm({...productoForm, imagen: e.target.files[0]})}
                         />
                       </Form.Group>
                       <Button variant="primary" onClick={guardarProducto}>Guardar</Button>

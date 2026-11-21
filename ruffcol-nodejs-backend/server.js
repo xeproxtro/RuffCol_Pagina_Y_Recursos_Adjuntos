@@ -11,7 +11,10 @@ const PORT = 3000;
 const JWT_SECRET = 'ruffcol_secret_key_2024';
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -102,12 +105,22 @@ function inicializarBaseDeDatos() {
 
         // Crear super admin por defecto
         db.get("SELECT COUNT(*) as count FROM usuario WHERE rol = 'SUPER_ADMIN'", (err, row) => {
-            if (row.count === 0) {
+            if (err) {
+                console.error('Error verificando super admin:', err);
+            } else if (row.count === 0) {
                 const passwordHash = bcrypt.hashSync('admin123', 10);
                 db.run(`INSERT INTO usuario (nombre, username, email, password, rol, estado_cuenta)
                     VALUES (?, ?, ?, ?, ?, ?)`,
-                    ['Super Admin', 'superadmin', 'superadmin@ruffcol.com', passwordHash, 'SUPER_ADMIN', 'ACTIVO']);
-                console.log('Super Admin creado: usuario=superadmin, password=admin123');
+                    ['Super Admin', 'superadmin', 'superadmin@ruffcol.com', passwordHash, 'SUPER_ADMIN', 'ACTIVO'],
+                    function(err) {
+                        if (err) {
+                            console.error('Error creando super admin:', err);
+                        } else {
+                            console.log('✅ Super Admin creado: usuario=superadmin, password=admin123, ID:', this.lastID);
+                        }
+                    });
+            } else {
+                console.log('✅ Super Admin ya existe');
             }
         });
     });
@@ -147,20 +160,30 @@ function autorizarRol(...roles) {
 app.post('/api/auth/login', (req, res) => {
     const { username, password } = req.body;
 
+    console.log('🔐 Intento de login:', { username, passwordLength: password?.length, body: req.body });
+
     db.get("SELECT * FROM usuario WHERE username = ?", [username], (err, user) => {
         if (err) {
+            console.error('❌ Error en consulta:', err);
             return res.status(500).json({ error: 'Error del servidor' });
         }
         if (!user) {
+            console.log('❌ Usuario no encontrado:', username);
             return res.status(401).json({ error: 'Credenciales inválidas' });
         }
 
+        console.log('✅ Usuario encontrado:', { id: user.id, username: user.username, rol: user.rol, estado: user.estado_cuenta, hasPassword: !!user.password });
+
         const passwordValida = bcrypt.compareSync(password, user.password);
+        console.log('🔍 Validación de contraseña:', { passwordValida, inputLength: password?.length, storedHashLength: user.password?.length });
+
         if (!passwordValida) {
+            console.log('❌ Contraseña incorrecta');
             return res.status(401).json({ error: 'Credenciales inválidas' });
         }
 
         if (user.estado_cuenta !== 'ACTIVO') {
+            console.log('❌ Cuenta no activa:', user.estado_cuenta);
             return res.status(403).json({ error: 'Cuenta no activa' });
         }
 
@@ -169,6 +192,8 @@ app.post('/api/auth/login', (req, res) => {
             JWT_SECRET,
             { expiresIn: '24h' }
         );
+
+        console.log('✅ Login exitoso para:', username);
 
         res.json({
             token,
